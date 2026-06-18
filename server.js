@@ -34,15 +34,15 @@ function sendJSON(res, code, data) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  const u = req.url;
   const method = req.method;
 
-  if (url.pathname === '/api/todos' && method === 'GET') {
+  if (u === '/api/todos' && method === 'GET') {
     const todos = await db.getAll();
     return sendJSON(res, 200, todos);
   }
 
-  if (url.pathname === '/api/todos' && method === 'POST') {
+  if (u === '/api/todos' && method === 'POST') {
     try {
       const body = await readBody(req);
       await db.create(body);
@@ -52,8 +52,8 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (url.pathname.startsWith('/api/todos/') && method === 'PATCH') {
-    const id = url.pathname.slice('/api/todos/'.length);
+  if (u.startsWith('/api/todos/') && method === 'PATCH') {
+    const id = u.slice('/api/todos/'.length);
     try {
       const body = await readBody(req);
       await db.update(id, body);
@@ -63,13 +63,13 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (url.pathname.startsWith('/api/todos/') && method === 'DELETE') {
-    const id = url.pathname.slice('/api/todos/'.length);
+  if (u.startsWith('/api/todos/') && method === 'DELETE') {
+    const id = u.slice('/api/todos/'.length);
     await db.remove(id);
     return sendJSON(res, 200, { ok: true });
   }
 
-  let filePath = url.pathname === '/' ? '/index.html' : url.pathname;
+  let filePath = u === '/' ? '/index.html' : u;
   filePath = path.join(__dirname, filePath);
 
   const ext = path.extname(filePath);
