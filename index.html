@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shibuya Todo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanline"></div>
+  <div class="container">
+    <header>
+      <h1 class="glitch" data-text="TODO://SHIBUYA">TODO://SHIBUYA</h1>
+      <p class="subtitle">> Tokyo Digital Task Matrix v1.0</p>
+    </header>
+
+    <div class="todo-card">
+      <form id="todo-form" class="input-row">
+        <input type="text" id="todo-input" placeholder="Enter task..." autofocus />
+        <button type="submit" id="add-btn">EXECUTE</button>
+      </form>
+
+      <div class="stats">
+        <span id="task-count">0 tasks</span>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">ALL</button>
+          <button class="filter-btn" data-filter="active">ACTIVE</button>
+          <button class="filter-btn" data-filter="completed">DONE</button>
+        </div>
+      </div>
+
+      <ul id="todo-list"></ul>
+    </div>
+
+    <div id="empty-state" class="empty-state">
+      <span class="empty-icon">[   ]</span>
+      <p>> No tasks found</p>
+      <p class="empty-hint">// Add a task above to initialize the matrix</p>
+    </div>
+
+    <footer>
+      <p>> SYSTEM: ONLINE &mdash; <span id="time-display"></span></p>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
