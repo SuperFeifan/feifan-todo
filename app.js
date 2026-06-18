@@ -3,16 +3,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('todo-form');
   const input = document.getElementById('todo-input');
   const columnSelect = document.getElementById('column-select');
-  const board = document.getElementById('board');
   const emptyState = document.getElementById('empty-state');
   const timeDisplay = document.getElementById('time-display');
 
   const COLUMNS = ['urgent', 'high', 'medium', 'low', 'backlog'];
 
-  let todos = JSON.parse(localStorage.getItem('feifan-todos')) || [];
+  let todos = [];
 
-  function save() {
-    localStorage.setItem('feifan-todos', JSON.stringify(todos));
+  async function api(method, path, body) {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function loadTodos() {
+    todos = await api('GET', '/api/todos');
+    render();
   }
 
   function updateClock() {
@@ -56,22 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
         del.innerHTML = '&#x2715;';
         del.setAttribute('aria-label', 'Delete task');
 
-        check.addEventListener('change', () => {
+        check.addEventListener('change', async () => {
           todo.done = check.checked;
-          save();
+          await api('PATCH', `/api/todos/${todo.id}`, { done: todo.done });
           render();
         });
 
-        del.addEventListener('click', (e) => {
+        del.addEventListener('click', async (e) => {
           e.stopPropagation();
+          await api('DELETE', `/api/todos/${todo.id}`);
           todos = todos.filter(t => t.id !== todo.id);
-          save();
           render();
         });
 
         card.addEventListener('dragstart', () => {
           card.classList.add('dragging');
-          card.closest('.column-body').classList.remove('drag-over');
         });
 
         card.addEventListener('dragend', () => {
@@ -88,8 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
       getCountEl(col).textContent = items.length;
     });
 
-    const total = todos.length;
-    if (total === 0) {
+    if (todos.length === 0) {
       emptyState.classList.remove('hidden');
     } else {
       emptyState.classList.add('hidden');
@@ -108,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       body.classList.remove('drag-over');
     });
 
-    body.addEventListener('drop', (e) => {
+    body.addEventListener('drop', async (e) => {
       e.preventDefault();
       body.classList.remove('drag-over');
 
@@ -117,31 +123,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const id = dragging.dataset.id;
       const todo = todos.find(t => t.id === id);
-      if (todo) {
+      if (todo && todo.column !== col) {
         todo.column = col;
-        save();
+        await api('PATCH', `/api/todos/${todo.id}`, { column: col });
         render();
       }
     });
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
 
-    todos.push({
+    const todo = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       text,
       column: columnSelect.value,
-      done: false,
-    });
+    };
 
+    await api('POST', '/api/todos', todo);
     input.value = '';
-    save();
-    render();
+    await loadTodos();
     input.focus();
   });
 
-  render();
+  loadTodos();
+
+  setInterval(loadTodos, 5000);
 });
