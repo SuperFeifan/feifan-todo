@@ -1,0 +1,12 @@
+{
+  "name": "shibuya-todo",
+  "version": "1.0.0",
+  "description": "Shibuya-style todo app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
