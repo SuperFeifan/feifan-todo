@@ -40,5 +40,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Shibuya Todo running on port ${PORT}`);
+  console.log(`feifan-todo running on port ${PORT}`);
 });

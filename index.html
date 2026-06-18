@@ -3,39 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shibuya Todo</title>
+  <title>feifan-todo</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="scanline"></div>
   <div class="container">
     <header>
-      <h1 class="glitch" data-text="TODO://SHIBUYA">TODO://SHIBUYA</h1>
-      <p class="subtitle">> Tokyo Digital Task Matrix v1.0</p>
+      <h1 class="glitch" data-text="FEIFAN://TODO">FEIFAN://TODO</h1>
+      <p class="subtitle">> Collaborative Task Matrix v2.0</p>
     </header>
 
-    <div class="todo-card">
-      <form id="todo-form" class="input-row">
-        <input type="text" id="todo-input" placeholder="Enter task..." autofocus />
-        <button type="submit" id="add-btn">EXECUTE</button>
-      </form>
+    <form id="todo-form" class="input-row">
+      <input type="text" id="todo-input" placeholder="Add a task..." autofocus />
+      <select id="column-select">
+        <option value="urgent">Urgent</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+        <option value="backlog">Backlog</option>
+      </select>
+      <button type="submit" id="add-btn">+ ADD</button>
+    </form>
 
-      <div class="stats">
-        <span id="task-count">0 tasks</span>
-        <div class="filters">
-          <button class="filter-btn active" data-filter="all">ALL</button>
-          <button class="filter-btn" data-filter="active">ACTIVE</button>
-          <button class="filter-btn" data-filter="completed">DONE</button>
+    <div class="board" id="board">
+      <div class="column" data-column="urgent">
+        <div class="column-header urgent">
+          <span class="dot"></span>
+          <span class="col-title">URGENT</span>
+          <span class="col-count" id="count-urgent">0</span>
         </div>
+        <div class="column-body" id="col-urgent"></div>
       </div>
-
-      <ul id="todo-list"></ul>
+      <div class="column" data-column="high">
+        <div class="column-header high">
+          <span class="dot"></span>
+          <span class="col-title">HIGH</span>
+          <span class="col-count" id="count-high">0</span>
+        </div>
+        <div class="column-body" id="col-high"></div>
+      </div>
+      <div class="column" data-column="medium">
+        <div class="column-header medium">
+          <span class="dot"></span>
+          <span class="col-title">MEDIUM</span>
+          <span class="col-count" id="count-medium">0</span>
+        </div>
+        <div class="column-body" id="col-medium"></div>
+      </div>
+      <div class="column" data-column="low">
+        <div class="column-header low">
+          <span class="dot"></span>
+          <span class="col-title">LOW</span>
+          <span class="col-count" id="count-low">0</span>
+        </div>
+        <div class="column-body" id="col-low"></div>
+      </div>
+      <div class="column" data-column="backlog">
+        <div class="column-header backlog">
+          <span class="dot"></span>
+          <span class="col-title">BACKLOG</span>
+          <span class="col-count" id="count-backlog">0</span>
+        </div>
+        <div class="column-body" id="col-backlog"></div>
+      </div>
     </div>
 
     <div id="empty-state" class="empty-state">
       <span class="empty-icon">[   ]</span>
-      <p>> No tasks found</p>
-      <p class="empty-hint">// Add a task above to initialize the matrix</p>
+      <p>> No tasks yet</p>
+      <p class="empty-hint">// Add a task above to populate the matrix</p>
     </div>
 
     <footer>

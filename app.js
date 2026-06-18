@@ -2,18 +2,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const form = document.getElementById('todo-form');
   const input = document.getElementById('todo-input');
-  const list = document.getElementById('todo-list');
-  const taskCount = document.getElementById('task-count');
+  const columnSelect = document.getElementById('column-select');
+  const board = document.getElementById('board');
   const emptyState = document.getElementById('empty-state');
-  const filterBtns = document.querySelectorAll('.filter-btn');
   const timeDisplay = document.getElementById('time-display');
 
-  let currentFilter = 'all';
+  const COLUMNS = ['urgent', 'high', 'medium', 'low', 'backlog'];
 
-  let todos = JSON.parse(localStorage.getItem('shibuya-todos')) || [];
+  let todos = JSON.parse(localStorage.getItem('feifan-todos')) || [];
 
   function save() {
-    localStorage.setItem('shibuya-todos', JSON.stringify(todos));
+    localStorage.setItem('feifan-todos', JSON.stringify(todos));
   }
 
   function updateClock() {
@@ -23,62 +22,108 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
+  function getColumnEl(col) {
+    return document.getElementById(`col-${col}`);
+  }
+
+  function getCountEl(col) {
+    return document.getElementById(`count-${col}`);
+  }
+
   function render() {
-    const filtered = todos.filter(t => {
-      if (currentFilter === 'active') return !t.done;
-      if (currentFilter === 'completed') return t.done;
-      return true;
-    });
+    COLUMNS.forEach(col => {
+      const body = getColumnEl(col);
+      const items = todos.filter(t => t.column === col);
+      body.innerHTML = '';
 
-    list.innerHTML = '';
+      items.forEach(todo => {
+        const card = document.createElement('div');
+        card.className = `todo-card${todo.done ? ' completed' : ''}`;
+        card.draggable = true;
+        card.dataset.id = todo.id;
 
-    filtered.forEach(todo => {
-      const li = document.createElement('li');
-      li.className = `todo-item${todo.done ? ' completed' : ''}`;
-      li.dataset.id = todo.id;
+        const check = document.createElement('input');
+        check.type = 'checkbox';
+        check.className = 'todo-check';
+        check.checked = todo.done;
 
-      const check = document.createElement('input');
-      check.type = 'checkbox';
-      check.className = 'todo-check';
-      check.checked = todo.done;
+        const span = document.createElement('span');
+        span.className = 'todo-text';
+        span.textContent = todo.text;
 
-      const span = document.createElement('span');
-      span.className = 'todo-text';
-      span.textContent = todo.text;
+        const del = document.createElement('button');
+        del.className = 'todo-delete';
+        del.innerHTML = '&#x2715;';
+        del.setAttribute('aria-label', 'Delete task');
 
-      const del = document.createElement('button');
-      del.className = 'todo-delete';
-      del.innerHTML = '&#x2715;';
-      del.setAttribute('aria-label', 'Delete task');
+        check.addEventListener('change', () => {
+          todo.done = check.checked;
+          save();
+          render();
+        });
 
-      check.addEventListener('change', () => {
-        todo.done = check.checked;
-        save();
-        render();
+        del.addEventListener('click', (e) => {
+          e.stopPropagation();
+          todos = todos.filter(t => t.id !== todo.id);
+          save();
+          render();
+        });
+
+        card.addEventListener('dragstart', () => {
+          card.classList.add('dragging');
+          card.closest('.column-body').classList.remove('drag-over');
+        });
+
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.column-body').forEach(el => el.classList.remove('drag-over'));
+        });
+
+        card.appendChild(check);
+        card.appendChild(span);
+        card.appendChild(del);
+        body.appendChild(card);
       });
 
-      del.addEventListener('click', () => {
-        todos = todos.filter(t => t.id !== todo.id);
-        save();
-        render();
-      });
-
-      li.appendChild(check);
-      li.appendChild(span);
-      li.appendChild(del);
-      list.appendChild(li);
+      getCountEl(col).textContent = items.length;
     });
 
     const total = todos.length;
-    const done = todos.filter(t => t.done).length;
-    taskCount.textContent = `${total} tasks (${done} done)`;
-
-    if (todos.length === 0) {
+    if (total === 0) {
       emptyState.classList.remove('hidden');
     } else {
       emptyState.classList.add('hidden');
     }
   }
+
+  COLUMNS.forEach(col => {
+    const body = getColumnEl(col);
+
+    body.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      body.classList.add('drag-over');
+    });
+
+    body.addEventListener('dragleave', () => {
+      body.classList.remove('drag-over');
+    });
+
+    body.addEventListener('drop', (e) => {
+      e.preventDefault();
+      body.classList.remove('drag-over');
+
+      const dragging = document.querySelector('.dragging');
+      if (!dragging) return;
+
+      const id = dragging.dataset.id;
+      const todo = todos.find(t => t.id === id);
+      if (todo) {
+        todo.column = col;
+        save();
+        render();
+      }
+    });
+  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -88,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     todos.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       text,
+      column: columnSelect.value,
       done: false,
     });
 
@@ -95,15 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
     save();
     render();
     input.focus();
-  });
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      render();
-    });
   });
 
   render();

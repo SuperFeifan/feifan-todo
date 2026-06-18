@@ -1,12 +1,9 @@
 {
-  "name": "shibuya-todo",
+  "name": "feifan-todo",
   "version": "1.0.0",
-  "description": "Shibuya-style todo app",
+  "description": "Collaborative Kanban Todo App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
-  },
-  "dependencies": {
-    "serve": "^14.2.0"
   }
 }
